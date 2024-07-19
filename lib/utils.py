@@ -1,6 +1,7 @@
 import yaml
 from datetime import date
 from shapely.wkt import loads
+from shapely.geometry import Polygon, box, shape
 import logging
 import sys
 
@@ -51,5 +52,23 @@ def get_dict_satellites_and_product_types(sat):
         satellites_and_product_types['Sentinel2'] = ['L1C', 'L2A']
         satellites_and_product_types['Sentinel3'] = ['all']
     
-    return satellites_and_product_types
-          
+    return satellites_and_product_types      
+
+def filter_based_on_polygon(list, polygon):
+    '''
+    CDSE is reconverting any polygon to a rectangular bounding box.
+    This function takes the products in the bounding box and creates
+    a list of products inside the polygon and only inside the polygon.
+    '''
+    print('Features in CDSE rectangular bounding box: ', len(list))
+    print('Filtering...')
+
+    filtered_features = []
+    for feature in list:
+        geom = shape(feature['geometry'])
+        if geom.within(polygon):
+            filtered_features.append(feature)
+    
+    print('Features in polygon: ', len(filtered_features))
+    
+    return filtered_features
