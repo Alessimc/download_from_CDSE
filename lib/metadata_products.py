@@ -1,7 +1,7 @@
 import requests
 import json
 import os
-from lib.utils import date_from_string, load_config, init_logging
+from lib.utils import date_from_string, load_config, init_logging, filter_based_on_polygon
 import sys
 
 (
@@ -57,7 +57,7 @@ class Metadata_products:
             
             # Append the records from the current response to the list
             self.all_records.extend(response.get("features", []))
-            
+   
             # Check if there are more records to fetch
             if len(response.get("features", [])) < maxRecords:
                 break  # No more records to fetch
@@ -65,8 +65,18 @@ class Metadata_products:
             # Increment page for the next request
             page = page + 1
         
+        # Filter CDSE rectangluar bounding box to true products within polygon
+        filtered_features = filter_based_on_polygon(self.all_records, polygon)
+        
+        # Create CDSE rectangluar bounding box file
         with open(self.filepath, 'w', encoding='utf-8') as f:
             json.dump(self.all_records, f, ensure_ascii=False, indent=4)
+            logger.info(f"------File created: {self.filepath}-------")
+        
+        # Create polygon filtered file
+        filtered_file_path = self.filepath.split('.')[0] + '_filtered.' + self.filepath.split('.')[1]
+        with open(filtered_file_path, 'w', encoding='utf-8') as f:
+            json.dump(filtered_features, f, ensure_ascii=False, indent=4)
             logger.info(f"------File created: {self.filepath}-------") 
     
     def load_json(self):
