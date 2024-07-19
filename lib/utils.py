@@ -66,7 +66,7 @@ def filter_based_on_polygon(list, polygon):
     filtered_features = []
     for feature in list:
         geom = shape(feature['geometry'])
-        if geom.within(polygon):
+        if geom.intersects(polygon):
             filtered_features.append(feature)
     
     print('Features in polygon: ', len(filtered_features))
